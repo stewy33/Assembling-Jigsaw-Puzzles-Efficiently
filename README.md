@@ -16,12 +16,12 @@ Unfortunately, [ImageNet](http://image-net.org/) seems to have been down for the
 2. Then download *ILSVRC2012_img_train.tar* using your favorite torrent client.
 3. Extract with `tar -xvf ILSVRC2012_img_train.tar`
 4. Extract all sub tars into their own folders with
-	```shell
-	for f in n*.tar;
-		do mkdir "${f%.tar}";
-		tar -xf "$f" -C "${f%.tar}";
-	done
-	```
+    ```shell
+    for f in n*.tar;
+        do mkdir "${f%.tar}";
+        tar -xf "$f" -C "${f%.tar}";
+    done
+    ```
 5. Move the new folders into *{repository root}/imagenet/all* and run `python imagenet_train_test_split.py`. Data is now ready!
 
 ## Training the Network
