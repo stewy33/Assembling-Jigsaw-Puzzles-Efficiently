@@ -46,3 +46,8 @@ To change the file name loaded for the permutations, open the file *JigsawLoader
 # ToDo
 - TensorboardX
 - LMDB DataLoader
+
+
+ImageNet 2017
+http://academictorrents.com/details/a306397ccf9c2ead27155983c254227c0fd938e2
+1,281,168 Images

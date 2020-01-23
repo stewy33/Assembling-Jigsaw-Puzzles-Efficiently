@@ -1,27 +1,24 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 18 11:58:07 2017
-
-@author: Biagio Brattoli
-"""
 import numpy as np
 import torch
 import torch.utils.data as data
 import torchvision.transforms as transforms
+import os
 from PIL import Image
 
 
 class DataLoader(data.Dataset):
-    def __init__(self, data_path, txt_list, classes=1000):
-        self.data_path = data_path
-        self.names, _ = self.__dataset_info(txt_list)
-        self.N = len(self.names)
-        self.permutations = self.__retrive_permutations(classes)
+    def __init__(self, data_path, classes=1000):
+        self.img_paths = []
+        for cls in os.listdir(data_path):
+            for img in os.listdir(os.path.join(data_path, cls)):
+                self.img_paths.append(os.path.join(data_path, cls, img))
 
-        self.__image_transformer = transforms.Compose([
+        self.permutations = self.retrieve_permutations(classes)
+
+        self.image_transformer = transforms.Compose([
             transforms.Resize(256, Image.BILINEAR),
             transforms.CenterCrop(255)])
-        self.__augment_tile = transforms.Compose([
+        self.augment_tile = transforms.Compose([
             transforms.RandomCrop(64),
             transforms.Resize((75, 75), Image.BILINEAR),
             transforms.Lambda(rgb_jittering),
@@ -31,14 +28,12 @@ class DataLoader(data.Dataset):
         ])
 
     def __getitem__(self, index):
-        framename = self.data_path + '/' + self.names[index]
-
-        img = Image.open(framename).convert('RGB')
+        img = Image.open(self.img_paths[index]).convert('RGB')
         if np.random.rand() < 0.30:
             img = img.convert('LA').convert('RGB')
 
         if img.size[0] != 255:
-            img = self.__image_transformer(img)
+            img = self.image_transformer(img)
 
         s = float(img.size[0]) / 3
         a = s / 2
@@ -49,7 +44,7 @@ class DataLoader(data.Dataset):
             c = [a * i * 2 + a, a * j * 2 + a]
             c = np.array([c[1] - a, c[0] - a, c[1] + a + 1, c[0] + a + 1]).astype(int)
             tile = img.crop(c.tolist())
-            tile = self.__augment_tile(tile)
+            tile = self.augment_tile(tile)
             # Normalize the patches indipendently to avoid low level features shortcut
             m, s = tile.view(3, -1).mean(dim=1).numpy(), tile.view(3, -1).std(dim=1).numpy()
             s[s == 0] = 1
@@ -64,22 +59,9 @@ class DataLoader(data.Dataset):
         return data, int(order), tiles
 
     def __len__(self):
-        return len(self.names)
+        return len(self.img_paths)
 
-    def __dataset_info(self, txt_labels):
-        with open(txt_labels, 'r') as f:
-            images_list = f.readlines()
-
-        file_names = []
-        labels = []
-        for row in images_list:
-            row = row.split(' ')
-            file_names.append(row[0])
-            labels.append(int(row[1]))
-
-        return file_names, labels
-
-    def __retrive_permutations(self, classes):
+    def retrieve_permutations(self, classes):
         all_perm = np.load('permutations_%d.npy' % (classes))
         # from range [1,9] to [0,8]
         if all_perm.min() == 1:

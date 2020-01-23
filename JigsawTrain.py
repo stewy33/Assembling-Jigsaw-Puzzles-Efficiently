@@ -15,7 +15,6 @@ from logger import Logger
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 sys.path.append('Dataset')
 from JigsawNetwork import Network
@@ -27,7 +26,6 @@ parser = argparse.ArgumentParser(description='Train JigsawPuzzleSolver on Imagen
 parser.add_argument('data', type=str, help='Path to Imagenet folder')
 parser.add_argument('--model', default=None, type=str, help='Path to pretrained model')
 parser.add_argument('--classes', default=1000, type=int, help='Number of permutation to use')
-parser.add_argument('--gpu', default=0, type=int, help='gpu id')
 parser.add_argument('--epochs', default=70, type=int, help='number of total epochs for training')
 parser.add_argument('--iter_start', default=0, type=int, help='Starting iteration count')
 parser.add_argument('--batch', default=256, type=int, help='batch size')
@@ -43,44 +41,32 @@ from JigsawImageLoader import DataLoader
 
 
 def main():
-    if args.gpu is not None:
-        print(('Using GPU %d'%args.gpu))
-        os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"]=str(args.gpu)
-    else:
-        print('CPU mode')
-    
     print('Process number: %d'%(os.getpid()))
     
     ## DataLoader initialize ILSVRC2012_train_processed
-    trainpath = args.data+'/ILSVRC2012_img_train'
-    if os.path.exists(trainpath+'_255x255'):
-        trainpath += '_255x255'
-    train_data = DataLoader(trainpath,args.data+'/ilsvrc12_train.txt',
+    trainpath = args.data+'/train'
+    train_data = DataLoader(trainpath,
                             classes=args.classes)
     train_loader = torch.utils.data.DataLoader(dataset=train_data,
                                             batch_size=args.batch,
                                             shuffle=True,
                                             num_workers=args.cores)
     
-    valpath = args.data+'/ILSVRC2012_img_val'
-    if os.path.exists(valpath+'_255x255'):
-        valpath += '_255x255'
-    val_data = DataLoader(valpath, args.data+'/ilsvrc12_val.txt',
+    valpath = args.data+'/test'
+    val_data = DataLoader(valpath,
                             classes=args.classes)
     val_loader = torch.utils.data.DataLoader(dataset=val_data,
                                             batch_size=args.batch,
                                             shuffle=True,
                                             num_workers=args.cores)
-    N = train_data.N
     
-    iter_per_epoch = train_data.N/args.batch
-    print('Images: train %d, validation %d'%(train_data.N,val_data.N))
+    iter_per_epoch = len(train_data)/args.batch
+    print(f'Images: train {len(train_data)}, validation {len(val_data)}')
+
+    cuda = torch.device('cuda')
     
     # Network initialize
-    net = Network(args.classes)
-    if args.gpu is not None:
-        net.cuda()
+    net = Network(args.classes).cuda()
     
     ############## Load from checkpoint if exists, otherwise from model ###############
     if os.path.exists(args.checkpoint):
@@ -115,7 +101,6 @@ def main():
     print(('Checkpoint: '+args.checkpoint))
     
     # Train the Model
-    batch_time, net_time = [], []
     steps = args.iter_start
     for epoch in range(int(args.iter_start/iter_per_epoch),args.epochs):
         if epoch%10==0 and epoch>0:
@@ -124,26 +109,17 @@ def main():
         
         end = time()
         for i, (images, labels, original) in enumerate(train_loader):
-            batch_time.append(time()-end)
-            if len(batch_time)>100:
-                del batch_time[0]
             
-            images = Variable(images)
-            labels = Variable(labels)
-            if args.gpu is not None:
-                images = images.cuda()
-                labels = labels.cuda()
+            images = images.cuda()
+            labels = labels.cuda()
 
             # Forward + Backward + Optimize
             optimizer.zero_grad()
             t = time()
             outputs = net(images)
-            net_time.append(time()-t)
-            if len(net_time)>100:
-                del net_time[0]
             
             prec1, prec5 = compute_accuracy(outputs.cpu().data, labels.cpu().data, topk=(1, 5))
-            acc = prec1[0]
+            acc = prec1.item()
 
             loss = criterion(outputs, labels)
             loss.backward()
@@ -151,9 +127,8 @@ def main():
             loss = float(loss.cpu().data.numpy())
 
             if steps%20==0:
-                print(('[%2d/%2d] %5d) [batch load % 2.3fsec, net %1.2fsec], LR %.5f, Loss: % 1.3f, Accuracy % 2.2f%%' %(
+                print(('[%2d/%2d] %5d), LR %.5f, Loss: % 1.3f, Accuracy % 2.2f%%' %(
                             epoch+1, args.epochs, steps, 
-                            np.mean(batch_time), np.mean(net_time),
                             lr, loss,acc)))
 
             if steps%20==0:
@@ -187,16 +162,14 @@ def test(net,criterion,logger,val_loader,steps):
     accuracy = []
     net.eval()
     for i, (images, labels, _) in enumerate(val_loader):
-        images = Variable(images)
-        if args.gpu is not None:
-            images = images.cuda()
+        images = images.cuda()
 
         # Forward + Backward + Optimize
         outputs = net(images)
         outputs = outputs.cpu().data
 
         prec1, prec5 = compute_accuracy(outputs, labels, topk=(1, 5))
-        accuracy.append(prec1[0])
+        accuracy.append(prec1.item())
 
     if logger is not None:
         logger.scalar_summary('accuracy', np.mean(accuracy), steps)

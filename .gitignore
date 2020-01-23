@@ -2,4 +2,4 @@ checkpoints*
 *.pyc
 JpsTraininig
 run.sh
-
+imagenet/
