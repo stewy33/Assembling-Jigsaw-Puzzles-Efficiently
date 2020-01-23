@@ -1,5 +1,7 @@
 # Assembling Jigsaw Puzzles Efficiently
-Reimplementing the 2016 paper "Unsupervised Learning of Visual Representations by Solving Jigsaw Puzzles" with newer and more efficient architectures. Original implementation of paper based off of [this repository](https://github.com/bbrattoli/JigsawPuzzlePytorch).
+Reimplementing the 2016 paper "Unsupervised Learning of Visual Representations by Solving Jigsaw Puzzles" with newer and more efficient architectures.
+
+Original implementation of paper based off of [this repository](https://github.com/bbrattoli/JigsawPuzzlePytorch).
 
 ## Dependencies
 - Python 3
@@ -35,7 +37,7 @@ python JigsawTrain.py [*path_to_imagenet*] --checkpoint [*path_checkpoints_and_l
 ```
 By default the network uses 1000 permutations with maximum hamming distance selected using *select_permutations.py*.
 
-To change the file name loaded for the permutations, open the file *JigsawLoader.py* and change the permutation file in the method *retrive_permutations*
+To change the file name loaded for the permutations, open the file *Dataset/JigsawLoader.py* and change the permutation file in the method *retrieve_permutations*
 
 # Details:
 - The input of the network should be 64x64, but it is resized to 75x75,
