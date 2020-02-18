@@ -1,7 +1,7 @@
 # Assembling Jigsaw Puzzles Efficiently
 Reimplementing the 2016 paper "Unsupervised Learning of Visual Representations by Solving Jigsaw Puzzles" with newer and more efficient architectures.
 
-Original implementation of paper based off of [this repository](https://github.com/bbrattoli/JigsawPuzzlePytorch).
+Original implementation of paper (with AlexNet) based off of [this repository](https://github.com/bbrattoli/JigsawPuzzlePytorch).
 
 ## Dependencies
 - Python 3
