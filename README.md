@@ -44,3 +44,6 @@ To change the file name loaded for the permutations, open the file *Dataset/Jigs
   otherwise the output of conv5 is 2x2 instead of 3x3 like the official architecture
 - Jigsaw trained using the approach of the paper: SGD, LRN layers, 70 epochs
 - Implemented data augmentation to discourage learning *shortcuts*: spatial jittering, normalize each patch indipendently, color jittering, 30% black&white image
+
+
+Results pending...
