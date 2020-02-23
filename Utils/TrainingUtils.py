@@ -5,7 +5,7 @@ Created on Fri Sep 22 16:53:30 2017
 @author: bbrattol
 """
 
-def adjust_learning_rate(optimizer, epoch, init_lr=0.1, step=30, decay=0.1):
+def adjust_learning_rate(optimizer, epoch, init_lr=0.1, step=60, decay=0.1):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     lr = init_lr * (decay ** (epoch // step))
     print('Learning Rate %f'%lr)

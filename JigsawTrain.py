@@ -36,7 +36,6 @@ parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set, No training')
 args = parser.parse_args()
 
-#from ImageDataLoader import DataLoader
 from JigsawImageLoader import DataLoader
 
 
@@ -105,7 +104,7 @@ def main():
     for epoch in range(int(args.iter_start/iter_per_epoch),args.epochs):
         if epoch%10==0 and epoch>0:
             test(net,criterion,logger_test,val_loader,steps)
-        lr = adjust_learning_rate(optimizer, epoch, init_lr=args.lr, step=20, decay=0.1)
+        lr = adjust_learning_rate(optimizer, epoch, init_lr=args.lr, step=30, decay=0.1)
         
         end = time()
         for i, (images, labels, original) in enumerate(train_loader):
