@@ -9,7 +9,7 @@ Original implementation of paper (with AlexNet) based off of [this repository](h
 - [Tensorflow](https://www.tensorflow.org/) for logging and training visualization
 
 ## Getting the Data
-Unfortunately, [ImageNet](http://image-net.org/) seems to have been down for the past month and a half :cry:, so I ended up using a torrent and downloading the 2012 Object Detection Training Dataset (full ImageNet was just too large to fit on my disk).
+Note: Unfortunately, [ImageNet](http://image-net.org/) was down for a bit, so I ended up using a torrent and downloading the 2012 Object Detection Training Dataset (full ImageNet was just too large to fit on my disk).
 
 1. [Download the ILSVRC 2012 Object Detection Academic Torrent](http://academictorrents.com/details/a306397ccf9c2ead27155983c254227c0fd938e2)
 (1,281,168 images across 1000 imagenet classes)
